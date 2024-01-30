@@ -7,19 +7,25 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain.chat_models import ChatOpenAI
 #from langchain_openai import ChatOpenAI
 
-prompt = ChatPromptTemplate.from_template("tell me a short joke about {topic}")
-model = ChatOpenAI(model="gpt-4")
+#################################
+# A. Simple LCEL Example
+prompt = ChatPromptTemplate.from_template("Tell me about {topic}")
+model = ChatOpenAI(model="gpt-3.5-turbo")
 output_parser = StrOutputParser()
 
+#LCEL syntax
 chain = prompt | model | output_parser
 
+#Run the chain
 chain.invoke({"topic": "ice cream"})
+#################################
 
 
+#################################
+# B. Basic Ray Serve Example
 # 0: Import ray serve and request from starlette
 from ray import serve
 from starlette.requests import Request
-
 
 # 1: Define a Ray Serve deployment.
 @serve.deployment
@@ -48,3 +54,51 @@ print(response.content.decode())
 
 # Shutdown the deployment
 serve.api.shutdown()
+#################################
+
+
+#################################
+# C. Deploy LLM with Ray Serve
+from ray import serve
+from starlette.requests import Request
+
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain.chat_models import ChatOpenAI
+
+@serve.deployment
+class DeployLLM:
+    def __init__(self):
+        # We initialize the LLM, template and the chain here
+        # llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY)
+        # template = "Question: {question}\n\nAnswer: Let's think step by step."
+        # prompt = ChatPromptTemplatePromptTemplate(template=template, input_variables=["question"])
+        # self.chain = LLMChain(llm=llm, prompt=prompt)
+        prompt = ChatPromptTemplate.from_template( "Question: {question}\n\nAnswer: Let's think step by step.")
+        model = ChatOpenAI(model="gpt-3.5-turbo")
+        output_parser = StrOutputParser()
+        self.chain = prompt | model | output_parser
+
+    def _run_chain(self, question: str):
+        return self.chain.invoke({"question": question})
+
+    async def __call__(self, request: Request):
+        # 1. Parse the request
+        text = request.query_params["text"]
+        # 2. Run the chain
+        resp = self._run_chain(text)
+        # 3. Return the response
+        return resp#resp["text"]
+    
+    
+deployment = DeployLLM.bind()
+serve.api.run(deployment)
+
+text = "What is the meaning of life?"
+PORT_NUMBER = 8000 #you can see this in the second or third line of the spin up logs
+response = requests.post(f"http://localhost:{PORT_NUMBER}/?text={text}")
+print(response.content.decode())
+
+# Shutdown the deployment
+serve.api.shutdown()
+#################################
