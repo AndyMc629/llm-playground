@@ -39,7 +39,6 @@ class LLMServe:
         # and return a response
         return "Hello World" #v1 has no LLM!
 
-
 # 2: Bind the model to deployment
 deployment = LLMServe.bind()
 
@@ -70,16 +69,28 @@ from langchain.chat_models import ChatOpenAI
 class DeployLLM:
     def __init__(self):
         # We initialize the LLM, template and the chain here
-        # llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY)
-        # template = "Question: {question}\n\nAnswer: Let's think step by step."
-        # prompt = ChatPromptTemplatePromptTemplate(template=template, input_variables=["question"])
-        # self.chain = LLMChain(llm=llm, prompt=prompt)
-        prompt = ChatPromptTemplate.from_template( "Question: {question}\n\nAnswer: Let's think step by step.")
+        prompt = ChatPromptTemplate.from_template(
+            "Question: {question}\n\nAnswer: Let's think step by step."
+            )
         model = ChatOpenAI(model="gpt-3.5-turbo")
         output_parser = StrOutputParser()
         self.chain = prompt | model | output_parser
 
     def _run_chain(self, question: str):
+<<<<<<<<<<<<<  ✨ Codeium AI Suggestion  >>>>>>>>>>>>>>
++        """
++        Run the chain with the given question.
++
++        :param question: str - the question to be passed to the chain
++        :return: the result of invoking the chain with the given question
++        """
+<<<<<  bot-e80084f2-3be0-4fdf-a7e0-5f8790c79ba0  >>>>>
+        """
+        Run the chain with the given question.
+
+        :param question: str - the question to be passed to the chain
+        :return: the result of invoking the chain with the given question
+        """
         return self.chain.invoke({"question": question})
 
     async def __call__(self, request: Request):
@@ -88,11 +99,11 @@ class DeployLLM:
         # 2. Run the chain
         resp = self._run_chain(text)
         # 3. Return the response
-        return resp#resp["text"]
-    
+        return resp
     
 deployment = DeployLLM.bind()
 serve.api.run(deployment)
+
 
 text = "What is the meaning of life?"
 PORT_NUMBER = 8000 #you can see this in the second or third line of the spin up logs
