@@ -77,14 +77,6 @@ class DeployLLM:
         self.chain = prompt | model | output_parser
 
     def _run_chain(self, question: str):
-<<<<<<<<<<<<<  ✨ Codeium AI Suggestion  >>>>>>>>>>>>>>
-+        """
-+        Run the chain with the given question.
-+
-+        :param question: str - the question to be passed to the chain
-+        :return: the result of invoking the chain with the given question
-+        """
-<<<<<  bot-e80084f2-3be0-4fdf-a7e0-5f8790c79ba0  >>>>>
         """
         Run the chain with the given question.
 
